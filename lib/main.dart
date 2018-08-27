@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bss_chat/chat.dart';
 import 'package:flutter_bss_chat/const.dart';
 import 'package:flutter_bss_chat/settings.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -171,7 +172,15 @@ class MainScreenState extends State<MainScreen> {
             ],
           ),
           onPressed: () {
-            // TODO navigate chat screen here
+            Navigator.push(
+              context,
+              new MaterialPageRoute(
+                builder: (context) => new Chat(
+                      peerId: document.documentID,
+                      peerAvatar: document['photoUrl'],
+                    ),
+              ),
+            );
           },
           color: greyColor2,
           padding: EdgeInsets.fromLTRB(25.0, 10.0, 25.0, 10.0),
