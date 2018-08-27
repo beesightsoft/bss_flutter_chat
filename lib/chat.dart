@@ -89,7 +89,7 @@ class ChatScreenState extends State<ChatScreen> {
     setState(() {});
   }
 
-  Future getImage() async {
+  Future openGallery() async {
     File image = await ImagePicker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
@@ -374,10 +374,21 @@ class ChatScreenState extends State<ChatScreen> {
           // Button send image
           Material(
             child: new Container(
-              margin: new EdgeInsets.symmetric(horizontal: 1.0),
               child: new IconButton(
                 icon: new Icon(Icons.image),
-                onPressed: getImage,
+                onPressed: openGallery,
+                color: themeColor,
+              ),
+            ),
+            color: Colors.white,
+          ),
+
+          // Button send more type
+          Material(
+            child: new Container(
+              child: new IconButton(
+                icon: new Icon(Icons.add_circle),
+                onPressed: () {},
                 color: themeColor,
               ),
             ),

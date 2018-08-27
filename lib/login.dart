@@ -46,6 +46,7 @@ class LoginScreenState extends State<LoginScreen> {
     prefs = await SharedPreferences.getInstance();
 
     if (prefs.getString('id') != null) {
+      Firestore.instance.collection('users').document(prefs.getString('id')).updateData({'isOnline': true});
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => MainScreen(currentUserId: prefs.getString('id'))),
@@ -68,8 +69,12 @@ class LoginScreenState extends State<LoginScreen> {
         final List<DocumentSnapshot> documents = result.documents;
         if (documents.length == 0) {
           // Update data to server if user is new
-          Firestore.instance.collection('users').document(firebaseUser.uid).setData(
-              {'nickname': firebaseUser.displayName, 'photoUrl': firebaseUser.photoUrl, 'id': firebaseUser.uid});
+          Firestore.instance.collection('users').document(firebaseUser.uid).setData({
+            'nickname': firebaseUser.displayName,
+            'photoUrl': firebaseUser.photoUrl,
+            'id': firebaseUser.uid,
+            'isOnline': true
+          });
 
           // Write data to local
           currentUser = firebaseUser;

@@ -18,7 +18,7 @@ class MainScreen extends StatefulWidget {
   State createState() => new MainScreenState(currentUserId: currentUserId);
 }
 
-class MainScreenState extends State<MainScreen> {
+class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   MainScreenState({Key key, @required this.currentUserId});
 
   final String currentUserId;
@@ -113,7 +113,9 @@ class MainScreenState extends State<MainScreen> {
       case 0:
         break;
       case 1:
-        exit(0);
+        Firestore.instance.collection('users').document(currentUserId).updateData({'isOnline': false}).then((_) {
+          exit(0);
+        });
         break;
     }
   }
@@ -193,6 +195,25 @@ class MainScreenState extends State<MainScreen> {
 
   final GoogleSignIn googleSignIn = new GoogleSignIn();
 
+  @override
+  void initState() {
+    super.initState();
+    print('--------------init');
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    print('------------dispose');
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print('--------------------$state');
+  }
+
   void onItemMenuPress(Choice choice) {
     if (choice.title == 'Log out') {
       handleSignOut();
@@ -206,6 +227,7 @@ class MainScreenState extends State<MainScreen> {
       isLoading = true;
     });
     await googleSignIn.signOut();
+    Firestore.instance.collection('users').document(currentUserId).updateData({'isOnline': false});
     this.setState(() {
       isLoading = false;
     });
