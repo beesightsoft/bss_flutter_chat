@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "707369918392",
+    "firebase_url": "https://flutterbsschat.firebaseio.com",
+    "project_id": "flutterbsschat",
+    "storage_bucket": "flutterbsschat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:707369918392:android:8c6805e23b8356a4",
+        "android_client_info": {
+          "package_name": "com.bss.flutterbsschat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "707369918392-e4aore8up979p9ps359l30ilpjknr3fj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bss.flutterbsschat",
+            "certificate_hash": "b2d83f01997443a7df7bd450d425222eeba332a9"
+          }
+        },
+        {
+          "client_id": "707369918392-eco4ibleb2skr365slad3e8vhliki7ia.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3IXQEXuiNbLTLi4ZGG7-JfH5Tx52kdvo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "707369918392-eco4ibleb2skr365slad3e8vhliki7ia.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
