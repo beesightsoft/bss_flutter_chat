@@ -42,20 +42,20 @@ class LoginScreenState extends State<LoginScreen> {
   SharedPreferences prefs;
 
   bool isLoading = false;
-  bool needLogin = true;
+  bool isLoggedIn = true;
   String pushToken = '';
   FirebaseUser currentUser;
 
   @override
   void initState() {
     super.initState();
-    isLoggedIn();
+    isSignedIn();
   }
 
-  void isLoggedIn() async {
-    needLogin = !(await googleSignIn.isSignedIn());
+  void isSignedIn() async {
+    isLoggedIn = await googleSignIn.isSignedIn();
     prefs = await SharedPreferences.getInstance();
-    if (needLogin) {
+    if (isLoggedIn) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => MainScreen(currentUserId: prefs.getString('id'))),
