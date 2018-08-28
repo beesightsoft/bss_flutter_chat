@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bss_chat/chat.dart';
 import 'package:flutter_bss_chat/const.dart';
@@ -21,6 +22,7 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   MainScreenState({Key key, @required this.currentUserId});
 
+  final FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
   final String currentUserId;
 
   bool isLoading = false;
@@ -128,23 +130,40 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         child: FlatButton(
           child: Row(
             children: <Widget>[
-              Material(
-                child: CachedNetworkImage(
-                  placeholder: Container(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 1.0,
-                      valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+              Stack(
+                children: <Widget>[
+                  // Avatar
+                  Material(
+                    child: CachedNetworkImage(
+                      placeholder: Container(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1.0,
+                          valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                        ),
+                        width: 50.0,
+                        height: 50.0,
+                        padding: EdgeInsets.all(15.0),
+                      ),
+                      imageUrl: document['photoUrl'],
+                      width: 50.0,
+                      height: 50.0,
+                      fit: BoxFit.cover,
                     ),
-                    width: 50.0,
-                    height: 50.0,
-                    padding: EdgeInsets.all(15.0),
+                    borderRadius: BorderRadius.all(Radius.circular(25.0)),
                   ),
-                  imageUrl: document['photoUrl'],
-                  width: 50.0,
-                  height: 50.0,
-                  fit: BoxFit.cover,
-                ),
-                borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                  // Status online
+                  Positioned(
+                    child: Container(
+                      width: 12.0,
+                      height: 12.0,
+                      decoration: BoxDecoration(
+                          color: document['isOnline'] ? Colors.green : Colors.red,
+                          borderRadius: BorderRadius.all(Radius.circular(6.0))),
+                    ),
+                    right: 2.0,
+                    bottom: 2.0,
+                  )
+                ],
               ),
               new Flexible(
                 child: Container(
@@ -202,6 +221,21 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
+  void registerNotification() {
+    firebaseMessaging.requestNotificationPermissions();
+    firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) {
+        print('on message: $message');
+      },
+      onResume: (Map<String, dynamic> message) {
+        print('on resume: $message');
+      },
+      onLaunch: (Map<String, dynamic> message) {
+        print('on launch: $message');
+      },
+    );
+  }
+
   @override
   void dispose() {
     print('------------dispose');
@@ -227,7 +261,7 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       isLoading = true;
     });
     await googleSignIn.signOut();
-    Firestore.instance.collection('users').document(currentUserId).updateData({'isOnline': false});
+    await Firestore.instance.collection('users').document(currentUserId).updateData({'isOnline': false});
     this.setState(() {
       isLoading = false;
     });
