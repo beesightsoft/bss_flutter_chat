@@ -25,7 +25,9 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
   final String currentUserId;
 
+  String pushToken = '';
   bool isLoading = false;
+
   List<Choice> choices = const <Choice>[
     const Choice(title: 'Settings', icon: Icons.settings),
     const Choice(title: 'Log out', icon: Icons.exit_to_app),
@@ -219,6 +221,7 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     super.initState();
     print('--------------init');
     WidgetsBinding.instance.addObserver(this);
+    registerNotification();
   }
 
   void registerNotification() {
@@ -234,6 +237,11 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         print('on launch: $message');
       },
     );
+    firebaseMessaging.getToken().then((token) {
+      pushToken = token;
+      Firestore.instance.collection('users').document(currentUserId).updateData({'pushToken': pushToken});
+    });
+
   }
 
   @override

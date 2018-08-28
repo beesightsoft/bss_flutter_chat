@@ -8,7 +8,6 @@ import 'package:flutter_bss_chat/main.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() => runApp(new MyApp());
 
@@ -42,8 +41,7 @@ class LoginScreenState extends State<LoginScreen> {
   SharedPreferences prefs;
 
   bool isLoading = false;
-  bool isLoggedIn = true;
-  String pushToken = '';
+  bool isLoggedIn = false;
   FirebaseUser currentUser;
 
   @override
@@ -65,10 +63,7 @@ class LoginScreenState extends State<LoginScreen> {
 
   Future<Null> handleSignIn() async {
     if (prefs.getString('id') != null) {
-      Firestore.instance
-          .collection('users')
-          .document(prefs.getString('id'))
-          .updateData({'isOnline': true, 'pushToken': pushToken});
+      Firestore.instance.collection('users').document(prefs.getString('id')).updateData({'isOnline': true});
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => MainScreen(currentUserId: prefs.getString('id'))),
