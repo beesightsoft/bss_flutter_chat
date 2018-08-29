@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_bss_chat/chat.dart';
 import 'package:flutter_bss_chat/const.dart';
 import 'package:flutter_bss_chat/settings.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class MainScreen extends StatefulWidget {
   final String currentUserId;
@@ -22,10 +24,10 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   MainScreenState({Key key, @required this.currentUserId});
 
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
   final FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
   final String currentUserId;
 
-  String pushToken = '';
   bool isLoading = false;
 
   List<Choice> choices = const <Choice>[
@@ -222,6 +224,7 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     print('--------------init');
     WidgetsBinding.instance.addObserver(this);
     registerNotification();
+    configLocalNotification();
   }
 
   void registerNotification() {
@@ -229,6 +232,16 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) {
         print('on message: $message');
+        String title = 'Undefined', content = 'undefined';
+        message.forEach((key, value) {
+          if (key == 'title') {
+            title = value;
+          }
+          if (key == 'content') {
+            content = value;
+          }
+        });
+        showNotification(title, content);
       },
       onResume: (Map<String, dynamic> message) {
         print('on resume: $message');
@@ -238,10 +251,46 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       },
     );
     firebaseMessaging.getToken().then((token) {
-      pushToken = token;
-      Firestore.instance.collection('users').document(currentUserId).updateData({'pushToken': pushToken});
+      print('token $token');
+      Firestore.instance.collection('users').document(currentUserId).updateData({'pushToken': token});
     });
+  }
 
+  void configLocalNotification() {
+    var initializationSettingsAndroid = new AndroidInitializationSettings('app_icon');
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings, selectNotification: onOpenNotification);
+  }
+
+  Future onOpenNotification(String payloadString) async {
+    Map<String, String> payload = JSON.decode(payloadString);
+    showDialog(
+      context: context,
+      builder: (_) {
+        return new AlertDialog(
+          title: Text(payload['title']),
+          content: Text(payload['content']),
+        );
+      },
+    );
+  }
+
+  void showNotification(String title, String content) async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+      'your channel id',
+      'your channel name',
+      'your channel description',
+      importance: Importance.Max,
+      priority: Priority.High,
+    );
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+      androidPlatformChannelSpecifics,
+      iOSPlatformChannelSpecifics,
+    );
+    String payloadString = JSON.encode({'title': title, 'content': content});
+    await flutterLocalNotificationsPlugin.show(0, title, content, platformChannelSpecifics, payload: payloadString);
   }
 
   @override
