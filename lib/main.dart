@@ -297,6 +297,11 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print('--------------------$state');
+    if (state == AppLifecycleState.paused) {
+      Firestore.instance.collection('users').document(currentUserId).updateData({'isOnline': false});
+    } else if (state == AppLifecycleState.resumed) {
+      Firestore.instance.collection('users').document(currentUserId).updateData({'isOnline': true});
+    }
   }
 
   void onItemMenuPress(Choice choice) {
@@ -312,7 +317,10 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       isLoading = true;
     });
     await googleSignIn.signOut();
-    await Firestore.instance.collection('users').document(currentUserId).updateData({'isOnline': false});
+    await Firestore.instance
+        .collection('users')
+        .document(currentUserId)
+        .updateData({'isOnline': false, 'pushToken': ''});
     this.setState(() {
       isLoading = false;
     });
