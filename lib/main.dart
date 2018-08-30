@@ -232,16 +232,7 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) {
         print('on message: $message');
-        String title = 'Undefined', content = 'undefined';
-        message.forEach((key, value) {
-          if (key == 'title') {
-            title = value;
-          }
-          if (key == 'content') {
-            content = value;
-          }
-        });
-        showNotification(title, content);
+        showNotification(message);
       },
       onResume: (Map<String, dynamic> message) {
         print('on resume: $message');
@@ -264,23 +255,25 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Future onOpenNotification(String payloadString) async {
-    Map<String, String> payload = JSON.decode(payloadString);
+    Map<String, dynamic> payload = json.decode(payloadString);
     showDialog(
       context: context,
       builder: (_) {
         return new AlertDialog(
           title: Text(payload['title']),
-          content: Text(payload['content']),
+          content: Text(payload['content'].toString()),
         );
       },
     );
   }
 
-  void showNotification(String title, String content) async {
+  void showNotification(Map<String, dynamic> message) async {
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
       'your channel id',
       'your channel name',
       'your channel description',
+      playSound: true,
+      enableVibration: true,
       importance: Importance.Max,
       priority: Priority.High,
     );
@@ -289,8 +282,9 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       androidPlatformChannelSpecifics,
       iOSPlatformChannelSpecifics,
     );
-    String payloadString = JSON.encode({'title': title, 'content': content});
-    await flutterLocalNotificationsPlugin.show(0, title, content, platformChannelSpecifics, payload: payloadString);
+    String payloadString = json.encode(message);
+    await flutterLocalNotificationsPlugin
+        .show(0, message['title'], message['content'].toString(), platformChannelSpecifics, payload: payloadString);
   }
 
   @override
