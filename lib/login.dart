@@ -51,6 +51,7 @@ class LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     isSignedIn();
+    print('xxxxxxxxxxxxxxxxxxxxx');
   }
 
   void isSignedIn() async {
@@ -71,8 +72,8 @@ class LoginScreenState extends State<LoginScreen> {
     }
 
     // Check login with email
-    firebaseAuth.onAuthStateChanged.listen((user) {
-      if (user != null) {
+    firebaseAuth.currentUser().then((firebaseUser) {
+      if (firebaseUser != null) {
         Fluttertoast.showToast(msg: "Log in with email success");
         Navigator.push(
           context,
@@ -104,17 +105,30 @@ class LoginScreenState extends State<LoginScreen> {
         break;
 
       case 1:
-        firebaseAuth
-            .signInWithEmailAndPassword(email: emailEditingController.text, password: passwordEditingController.text)
-            .then((firebaseUser) async {
-          handleDataSignIn(firebaseUser);
-        }).catchError((error) async {
-          FirebaseUser firebaseUser = await firebaseAuth.createUserWithEmailAndPassword(
-            email: emailEditingController.text,
-            password: passwordEditingController.text,
-          );
-          handleDataSignIn(firebaseUser);
-        });
+        if (emailEditingController.text.trim() != '' || emailEditingController.text.trim() != '') {
+          firebaseAuth
+              .signInWithEmailAndPassword(email: emailEditingController.text, password: passwordEditingController.text)
+              .then((firebaseUser) async {
+            handleDataSignIn(firebaseUser);
+          }).catchError((error) async {
+            await firebaseAuth
+                .createUserWithEmailAndPassword(
+                    email: emailEditingController.text, password: passwordEditingController.text)
+                .then((firebaseUser) async {
+              handleDataSignIn(firebaseUser);
+            }).catchError((error) {
+              this.setState(() {
+                isLoading = false;
+              });
+              Fluttertoast.showToast(msg: 'Your email or pasword not true');
+            });
+          });
+        } else {
+          this.setState(() {
+            isLoading = false;
+          });
+          Fluttertoast.showToast(msg: 'Your email or pasword not true');
+        }
         break;
     }
   }
