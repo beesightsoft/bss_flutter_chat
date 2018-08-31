@@ -51,7 +51,6 @@ class LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     isSignedIn();
-    print('xxxxxxxxxxxxxxxxxxxxx');
   }
 
   void isSignedIn() async {
@@ -177,7 +176,7 @@ class LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future openDialog() async {
+  Future openDialogLogin() async {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -188,14 +187,14 @@ class LoginScreenState extends State<LoginScreen> {
               Container(
                 color: themeColor,
                 margin: new EdgeInsets.all(0.0),
-                child: Container(
+                child: Center(
                   child: new Text(
                     'Fill out your email and password',
-                    style: new TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18.0),
+                    style: new TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16.0),
                     textAlign: TextAlign.center,
                   ),
-                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                 ),
+                height: 80.0,
               ),
 
               // Email
@@ -207,6 +206,7 @@ class LoginScreenState extends State<LoginScreen> {
                   keyboardType: TextInputType.emailAddress,
                 ),
                 padding: EdgeInsets.all(15.0),
+                margin: EdgeInsets.only(top: 20.0),
               ),
 
               // Password
@@ -244,6 +244,69 @@ class LoginScreenState extends State<LoginScreen> {
         });
   }
 
+  Future openDialogForgotPassword() async {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return new SimpleDialog(
+            contentPadding: new EdgeInsets.only(left: 0.0, right: 0.0, top: 0.0, bottom: 10.0),
+            children: <Widget>[
+              // Title
+              Container(
+                color: themeColor,
+                margin: new EdgeInsets.all(0.0),
+                child: Center(
+                  child: new Text(
+                    'Fill out your email',
+                    style: new TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16.0),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                height: 80.0,
+              ),
+
+              // Email
+              Container(
+                child: TextField(
+                  decoration: InputDecoration.collapsed(
+                      hintText: 'Email', hintStyle: TextStyle(color: greyColor), border: UnderlineInputBorder()),
+                  controller: emailEditingController,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                padding: EdgeInsets.all(15.0),
+                margin: EdgeInsets.only(top: 10.0),
+              ),
+
+              // Go button
+              Container(
+                child: FlatButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    forgotPassword();
+                  },
+                  child: Text(
+                    'DONE',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  color: themeColor,
+                  highlightColor: themeColor2,
+                  splashColor: Colors.transparent,
+                  textColor: Colors.white,
+                  padding: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 15.0),
+                ),
+                margin: EdgeInsets.fromLTRB(50.0, 20.0, 50.0, 10.0),
+              ),
+            ],
+          );
+        });
+  }
+
+  void forgotPassword() {
+    firebaseAuth.sendPasswordResetEmail(email: emailEditingController.text).whenComplete(() {
+      Fluttertoast.showToast(msg: 'Check your email to reset password');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -268,6 +331,8 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                     margin: EdgeInsets.only(bottom: 50.0),
                   ),
+
+                  // Button sign-in with google
                   Container(
                     child: FlatButton(
                       onPressed: () {
@@ -286,10 +351,12 @@ class LoginScreenState extends State<LoginScreen> {
                     width: 250.0,
                     margin: EdgeInsets.only(bottom: 20.0),
                   ),
+
+                  // Button sign-in with email
                   Container(
                     child: FlatButton(
                       onPressed: () {
-                        openDialog();
+                        openDialogLogin();
                       },
                       child: Text(
                         'SIGN IN WITH EMAIL',
@@ -306,6 +373,24 @@ class LoginScreenState extends State<LoginScreen> {
                 ],
                 mainAxisAlignment: MainAxisAlignment.center,
               ),
+            ),
+
+            // Button forgot password
+            Positioned(
+              child: Container(
+                child: FlatButton(
+                  onPressed: openDialogForgotPassword,
+                  child: Text(
+                    'Fotgot password?',
+                    style: TextStyle(
+                      color: themeColor,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ),
+              right: 10.0,
+              bottom: 10.0,
             ),
 
             // Loading
