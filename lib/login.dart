@@ -54,54 +54,68 @@ class LoginScreenState extends State<LoginScreen> {
   }
 
   void isSignedIn() async {
-    isLoggedIn = await googleSignIn.isSignedIn();
+    this.setState(() {
+      isLoading = true;
+    });
+
     prefs = await SharedPreferences.getInstance();
+
+    // Check login with google
+    isLoggedIn = await googleSignIn.isSignedIn();
     if (isLoggedIn) {
+      Fluttertoast.showToast(msg: "Log in with google success");
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => MainScreen(currentUserId: prefs.getString('id'))),
       );
     }
+
+    // Check login with email
+    firebaseAuth.onAuthStateChanged.listen((user) {
+      if (user != null) {
+        Fluttertoast.showToast(msg: "Log in with email success");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen(currentUserId: prefs.getString('id'))),
+        );
+      }
+    });
+
+    this.setState(() {
+      isLoading = false;
+    });
   }
 
   // 0 = Google, 1 = email
   Future handleSignIn(int typeSignIn) async {
-    if (prefs.getString('id') != null) {
-      Firestore.instance.collection('users').document(prefs.getString('id')).updateData({'isOnline': true});
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => MainScreen(currentUserId: prefs.getString('id'))),
-      );
-    } else {
-      this.setState(() {
-        isLoading = true;
-      });
+    this.setState(() {
+      isLoading = true;
+    });
 
-      switch (typeSignIn) {
-        case 0:
-          GoogleSignInAccount googleUser = await googleSignIn.signIn();
-          GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-          FirebaseUser firebaseUser = await firebaseAuth.signInWithGoogle(
-            accessToken: googleAuth.accessToken,
-            idToken: googleAuth.idToken,
+    switch (typeSignIn) {
+      case 0:
+        GoogleSignInAccount googleUser = await googleSignIn.signIn();
+        GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        FirebaseUser firebaseUser = await firebaseAuth.signInWithGoogle(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        handleDataSignIn(firebaseUser);
+        break;
+
+      case 1:
+        firebaseAuth
+            .signInWithEmailAndPassword(email: emailEditingController.text, password: passwordEditingController.text)
+            .then((firebaseUser) async {
+          handleDataSignIn(firebaseUser);
+        }).catchError((error) async {
+          FirebaseUser firebaseUser = await firebaseAuth.createUserWithEmailAndPassword(
+            email: emailEditingController.text,
+            password: passwordEditingController.text,
           );
           handleDataSignIn(firebaseUser);
-          break;
-
-        case 1:
-          firebaseAuth
-              .signInWithEmailAndPassword(email: emailEditingController.text, password: passwordEditingController.text)
-              .then((firebaseUser) async {
-            handleDataSignIn(firebaseUser);
-          }).catchError((error) async {
-            FirebaseUser firebaseUser = await firebaseAuth.createUserWithEmailAndPassword(
-              email: 'duy.tran@beesightsoft.com',
-              password: 'duytran123',
-            );
-            handleDataSignIn(firebaseUser);
-          });
-          break;
-      }
+        });
+        break;
     }
   }
 
@@ -166,7 +180,7 @@ class LoginScreenState extends State<LoginScreen> {
                     style: new TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18.0),
                     textAlign: TextAlign.center,
                   ),
-                  margin: EdgeInsets.all(20.0),
+                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                 ),
               ),
 
@@ -174,9 +188,7 @@ class LoginScreenState extends State<LoginScreen> {
               Container(
                 child: TextField(
                   decoration: InputDecoration.collapsed(
-                    hintText: 'Email',
-                    hintStyle: TextStyle(color: greyColor),
-                  ),
+                      hintText: 'Email', hintStyle: TextStyle(color: greyColor), border: UnderlineInputBorder()),
                   controller: emailEditingController,
                   keyboardType: TextInputType.emailAddress,
                 ),
@@ -187,9 +199,7 @@ class LoginScreenState extends State<LoginScreen> {
               Container(
                 child: TextField(
                   decoration: InputDecoration.collapsed(
-                    hintText: 'Password',
-                    hintStyle: TextStyle(color: greyColor),
-                  ),
+                      hintText: 'Password', hintStyle: TextStyle(color: greyColor), border: UnderlineInputBorder()),
                   controller: passwordEditingController,
                   obscureText: true,
                 ),
@@ -200,6 +210,7 @@ class LoginScreenState extends State<LoginScreen> {
               Container(
                 child: FlatButton(
                   onPressed: () {
+                    Navigator.pop(context);
                     handleSignIn(1);
                   },
                   child: Text(

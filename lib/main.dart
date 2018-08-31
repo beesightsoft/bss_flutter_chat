@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bss_chat/chat.dart';
@@ -24,8 +25,12 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   MainScreenState({Key key, @required this.currentUserId});
 
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+  final GoogleSignIn googleSignIn = new GoogleSignIn();
+  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+
   final String currentUserId;
 
   bool isLoading = false;
@@ -40,7 +45,7 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     return Future.value(false);
   }
 
-  Future<Null> openDialog() async {
+  Future openDialog() async {
     switch (await showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -227,12 +232,12 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
-  final GoogleSignIn googleSignIn = new GoogleSignIn();
-
   @override
   void initState() {
     super.initState();
     print('--------------init');
+    Firestore.instance.collection('users').document(currentUserId).updateData({'isOnline': true});
+
     WidgetsBinding.instance.addObserver(this);
     registerNotification();
     configLocalNotification();
@@ -323,15 +328,21 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
-  Future<Null> handleSignOut() async {
+  Future handleSignOut() async {
     this.setState(() {
       isLoading = true;
     });
-    await googleSignIn.signOut();
+
     await Firestore.instance
         .collection('users')
         .document(currentUserId)
         .updateData({'isOnline': false, 'pushToken': ''});
+
+    // Sign out with google
+    await googleSignIn.signOut();
+    // Sign out with email
+    await firebaseAuth.signOut();
+
     this.setState(() {
       isLoading = false;
     });

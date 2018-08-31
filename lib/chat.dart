@@ -48,6 +48,9 @@ class ChatScreen extends StatefulWidget {
 class ChatScreenState extends State<ChatScreen> {
   ChatScreenState({Key key, @required this.peerId, @required this.peerAvatar});
 
+  final TextEditingController textEditingController = new TextEditingController();
+  final ScrollController listScrollController = new ScrollController();
+
   String peerId;
   String peerAvatar;
   String id;
@@ -61,13 +64,9 @@ class ChatScreenState extends State<ChatScreen> {
   bool isShowSticker;
   String imageUrl;
 
-  final TextEditingController textEditingController = new TextEditingController();
-  final ScrollController listScrollController = new ScrollController();
-
   @override
   void initState() {
     super.initState();
-
     groupChatId = '';
 
     isLoading = false;
