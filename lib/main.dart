@@ -149,6 +149,17 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         padding: EdgeInsets.all(15.0),
                       ),
                       imageUrl: document['photoUrl'],
+                      errorWidget: Material(
+                        child: Image.asset(
+                          'images/img_not_available.jpeg',
+                          width: 50.0,
+                          height: 50.0,
+                          fit: BoxFit.cover,
+                        ),
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(25.0),
+                        ),
+                      ),
                       width: 50.0,
                       height: 50.0,
                       fit: BoxFit.cover,
