@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="facebook_app_id">233797004147191</string>
+    <string name="fb_login_protocol_scheme">fb233797004147191</string>
+    <string name="app_name">flutterbsschat</string>
+</resources>

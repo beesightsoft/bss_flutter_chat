@@ -8,3 +8,8 @@
 build/
 
 .flutter-plugins
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
